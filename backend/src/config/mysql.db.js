@@ -6,7 +6,8 @@ const pool = mysql.createPool({
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  port: 3306,  // Default MySQL port
+  //port: 3306,  // Default MySQL port
+  port: process.env.DB_PORT,
   multipleStatements: true,  // Allow multiple queries in a single request
   dateStrings: true,  // Handle date fields as strings
   waitForConnections: true,  // Wait for available connection if pool is full
