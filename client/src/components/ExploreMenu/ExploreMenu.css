@@ -1,0 +1,33 @@
+.explore-menu {
+  margin-bottom: 30px;
+}
+
+.explore-menu-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 12px;
+  padding: 10px 0;
+  scrollbar-width: none;
+  scroll-behavior: smooth;
+}
+
+.explore-menu-list::-webkit-scrollbar {
+  display: none;
+}
+
+.explore-menu-item {
+  white-space: nowrap;
+  padding: 10px 20px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  background-color: #f7f7f7;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.explore-menu-item.active {
+  background-color: #ff4c24;
+  color: white;
+  border-color: #ff4c24;
+}

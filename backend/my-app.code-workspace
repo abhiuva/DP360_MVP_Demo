@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"name": "my-app",
+			"path": "../../../my-app"
+		},
+		{
+			"name": "mobile-app",
+			"path": "../../../mobile-app"
+		},
+		{
+			"name": "go-project",
+			"path": "../../../go-project"
+		},
+		{
+			"path": ".."
+		}
+	],
+	"settings": {}
+}

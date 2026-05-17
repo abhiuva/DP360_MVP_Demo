@@ -1,0 +1,17 @@
+.dp360-dashboard-grid {
+  min-height: 320px;
+}
+
+.dp360-dashboard-grid .react-grid-item {
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+
+.dp360-dashboard-grid .react-grid-item.react-grid-placeholder {
+  background: #0f766e;
+  border-radius: 8px;
+  opacity: 0.14;
+}
+
+.dp360-dashboard-grid .react-resizable-handle::after {
+  border-color: #6b7280;
+}

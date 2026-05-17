@@ -1,0 +1,462 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700;1,900&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* width */
+::-webkit-scrollbar {
+    width: 1px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #d4d4d4;
+    border-radius: 100px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #989898;
+}
+
+@layer base {
+    html {
+        font-family: 'Nunito', sans-serif;
+        font-optical-sizing: auto;
+    }
+  :root {
+        --background: 0 0% 100%;
+        --foreground: 0 0% 3.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 0 0% 3.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 0 0% 3.9%;
+        --primary: 0 0% 9%;
+        --primary-foreground: 0 0% 98%;
+        --secondary: 0 0% 96.1%;
+        --secondary-foreground: 0 0% 9%;
+        --muted: 0 0% 96.1%;
+        --muted-foreground: 0 0% 45.1%;
+        --accent: 0 0% 96.1%;
+        --accent-foreground: 0 0% 9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 89.8%;
+        --input: 0 0% 89.8%;
+        --ring: 0 0% 3.9%;
+        --chart-1: 12 76% 61%;
+        --chart-2: 173 58% 39%;
+        --chart-3: 197 37% 24%;
+        --chart-4: 43 74% 66%;
+        --chart-5: 27 87% 67%;
+        --radius: 0.5rem;
+    }
+  .dark {
+        --background: 0 0% 3.9%;
+        --foreground: 0 0% 98%;
+        --card: 0 0% 3.9%;
+        --card-foreground: 0 0% 98%;
+        --popover: 0 0% 3.9%;
+        --popover-foreground: 0 0% 98%;
+        --primary: 0 0% 98%;
+        --primary-foreground: 0 0% 9%;
+        --secondary: 0 0% 14.9%;
+        --secondary-foreground: 0 0% 98%;
+        --muted: 0 0% 14.9%;
+        --muted-foreground: 0 0% 63.9%;
+        --accent: 0 0% 14.9%;
+        --accent-foreground: 0 0% 98%;
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 0 0% 98%;
+        --border: 0 0% 14.9%;
+        --input: 0 0% 14.9%;
+        --ring: 0 0% 83.1%;
+        --chart-1: 220 70% 50%;
+        --chart-2: 160 60% 45%;
+        --chart-3: 30 80% 55%;
+        --chart-4: 280 65% 60%;
+        --chart-5: 340 75% 55%;
+    }
+}
+
+.outline-text {
+    text-shadow:
+        1px 1px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000;
+}
+
+.feedback-form {
+    width: 300px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-form h2 {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.feedback-form .form-group {
+    margin-bottom: 20px;
+}
+
+.feedback-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.feedback-form textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    resize: none;
+}
+
+.feedback-form .rating {
+    font-size: 24px;
+    color: #ffd700;
+    cursor: pointer;
+}
+
+.feedback-form .rating .star {
+    padding: 0 5px;
+}
+
+.feedback-form .rating .star.filled {
+    color: #ff7e00;
+}
+
+.feedback-form .error {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.feedback-form button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.feedback-form button:hover {
+    background-color: #218838;
+}
+
+.rating,
+.Service,
+.Food {
+    display: flex;
+    gap: 5px;
+    align-items: center; /* Align stars vertically */
+}
+
+details[open] .collapse-content {
+  display: block;
+}
+
+.collapse-content {
+  display: block;
+}
+
+.star {
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #ccc;
+}
+
+.star.filled {
+    color: gold;
+}
+
+iframe {
+    border: none;
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+.form-select {
+    width: 100%;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid #b79797;
+
+}
+
+.form-control {
+    border: 1px solid #9d9994;
+    
+    outline-color: #da9e1e;
+
+
+
+}
+.period-date .form-label{
+    font-size: 13px;
+    margin-bottom: 0;
+}
+
+.address {
+    height: 15vh;
+}
+
+.employee_headers {
+    margin-top: 30px;
+    margin-bottom: 30px;
+    font-size: 22px;
+    font-weight: 700;
+}
+.profile-picture{
+    width: 200px;
+    height: 170px;
+    border-style: dashed;
+    cursor:pointer;
+}
+
+
+
+.btn-save {
+    background-color: #edbb8a;
+    color: #fff;
+    border: 1px solid #383636;
+
+
+}
+
+.btn-back {
+    background-color: #9d9994;
+    color: #fff;
+    border: 1px solid #383636;
+}
+
+.btn-save:hover {
+    background: #e27b4f;
+    color: #fff;
+    border: 1px solid #383636;
+}
+
+.btn-back:hover {
+    background: #4c4745;
+    color: #fff;
+    border: 1px solid #383636;
+}
+
+.btn-add {
+    background-color: #e27b4f;
+    color: #ffffff;
+}
+
+.container {
+    width: 100%;
+    background-color: #ffffff;
+}
+
+.table td {
+    font-weight: 400;
+    vertical-align: middle;
+    color: #000;
+    
+}
+
+
+
+
+
+.menuOpenBox {
+
+    width: 150px;
+    position: absolute;
+    top: 80px;
+    right: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    padding: 5px 10px;
+    cursor: pointer;
+
+}
+
+
+
+.search-box {
+    font-size: 20px;
+    margin: 10px;
+    padding: 5px;
+    height: 33px;
+    border: 1.5px solid #4c4745;
+    border-radius: 5px;
+    outline-color: #e27b4f;
+}
+
+.pagination-box {
+    font-size: 14px;
+    border: 1.5px solid #333;
+    border-radius: 5px;
+    padding-left: 10px;
+    margin: 0px 5px;
+    width: 55px;
+    height: 33px;
+    outline-color: #e27b4f;
+}
+
+.pagination-control label {
+    font-size: 14px;
+}
+
+.search-control label {
+    font-size: 14px;
+}
+
+.search-control input {
+    font-size: 14px;
+}
+.filter-button{
+    background-color: #28a745;
+    width: 80px;
+    height: 38px;
+    color: #ffffff;
+    border: nobe;
+    border-radius: 5px;
+    
+}
+.workPeriodReport{
+    border: 2px solid gray;
+    text-align: center;
+    width: 100%;
+    
+}
+.workPeriodReport th{
+    border: 2px solid gray;
+    background-color: #dee0e3;
+    
+}
+.workPeriodReport td{
+    border: 2px solid gray;
+}
+#pdf-content {
+    background-color: #ffffff !important; /* Force white background */
+}
+
+/* .download-1{
+    background-color: #15a21c;
+    width: 40px;
+    height: 40px;
+    margin: 2px;
+    border-radius: 4px;
+    
+} */
+.download-2{
+    background-color: #e01c1c;
+    width: 40px;
+    height: 40px;
+    margin: 2px;
+    border-radius: 4px;
+    
+}
+/* .download-3{
+    background-color: #39b8b4;
+    width: 40px;
+    height: 40px;
+    margin: 2px;
+    border-radius: 4px;
+    
+} */
+/* .download-4{
+    background-color: #565b57;
+    width: 40px;
+    height: 40px;
+    margin: 2px;
+    border-radius: 4px;
+    
+} */
+.navigate-1{
+    /* background-color: #ee7e65; */
+    /* color: black; */
+    padding: 11px;
+    border-left: #007bff;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    
+}
+.navigate-2{
+    
+    /* color: black; */
+    padding: 11px;
+    border-left: #007bff;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    
+}
+.current-page{
+    background-color: #ffffff;
+    color: black;
+    padding: 9.5px;
+    
+}
+.profile_image{
+    background-color: #28a745;
+    width: 80px;
+    border-radius: 50px;
+   
+   
+}
+
+
+.perspective {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+[data-state="open"] button[data-dialog-close] {
+  display: none !important;
+}
+
+[data-state="open"] {
+  z-index: 99999 !important;
+}
