@@ -1,33 +1,18 @@
 const app = require("./src/app");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const { CONFIG } = require("./src/config");
 const { getTenantIdFromQRCode } = require("./src/services/settings.service");
+const { socketCorsOptions, allowedOrigins } = require("./src/config/cors");
 
 const PORT = process.env.PORT || 3000;
 
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-  cors: {
-    credentials: true,
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3001"
-    ],
-    methods: ["GET", "POST"]
-  }
+  cors: socketCorsOptions,
 });
 
-const cors = require('cors');
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:3001"
-  ],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}));
+console.log("[Socket.IO CORS allowedOrigins]", allowedOrigins);
 
 io.on("connection", (socket) => {
   console.log(socket.id);
@@ -56,5 +41,5 @@ io.on("connection", (socket) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`Backend started on http://localhost:${PORT}`);
+  console.log(`Backend started on port ${PORT}`);
 });

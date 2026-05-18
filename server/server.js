@@ -16,12 +16,27 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const port = process.env.PORT || 4000;
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://dp360-mvp.netlify.app",
+  ...(process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
 
 // Enable CORS (before routes!)
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:3001"],
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} is not allowed by CORS`));
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true,
   })
 );
@@ -52,9 +67,9 @@ app.use("/api", checkoutRoutes);
 
 // Basic test route
 app.get("/", (req, res) => {
-  res.send("API Working");
+  res.send("DP360 Backend Running");
 });
 
 app.listen(port, () =>
-  console.log(`Server started on http://localhost:${port}`)
+  console.log(`Server started on port ${port}`)
 );

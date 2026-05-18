@@ -18,18 +18,38 @@ exports.signInDB = async (username, password) => {
         const user = result[0];
 
         if(!user) {
+            console.warn("[auth/signin] User not found", { username });
             return null;
         }
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        let passwordMatch = false;
+        try {
+            passwordMatch = await bcrypt.compare(password, user.password);
+        } catch (error) {
+            console.error("[auth/signin] bcrypt compare failed", {
+                username,
+                name: error.name,
+                message: error.message,
+            });
+            throw error;
+        }
+
         if(passwordMatch) {
             return user;
         } else {
+            console.warn("[auth/signin] Password mismatch", { username });
             return null;
         }
 
     } catch (error) {
-        console.error(error);
+        console.error("[auth/signin] Query failed", {
+            username,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            name: error.name,
+            message: error.message,
+        });
         throw error;
     } finally {
         conn.release();

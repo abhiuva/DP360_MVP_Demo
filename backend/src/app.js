@@ -34,6 +34,7 @@ const paymentsRoutes = require("./routes/payments.routes")
 const salesRoutes = require("./routes/sales.routes");
 const ceoRoutes = require("./routes/ceo.routes");
 const terminalRoutes = require("./routes/terminal.routes");
+const { allowedOrigins, corsOptions } = require("./config/cors");
 
 
 // routes import
@@ -59,35 +60,7 @@ const app = express();
 // });
 
 
-const isProd = process.env.NODE_ENV === "production";
-
-const splitCSV = (s = "") => s.split(",").map(v => v.trim()).filter(Boolean);
-
-
-var corsWhitelist = [
-  CONFIG.FRONTEND_DOMAIN,
-  'http://localhost:5173'
-];
-  
-// Build allow-list from config/env; handle comma-separated values
-const allowList = Array.from(new Set([
-  ...splitCSV(CONFIG.FRONTEND_DOMAIN),        // e.g. "http://20.193.128.146:5173,http://20.193.128.146:3001"
-  ...splitCSV(process.env.FRONTEND_DOMAIN),   // optional env override
-  process.env.CLIENT_URL,                     // optional single origin
-  !isProd && "http://localhost:5173"
-])).filter(Boolean);
-
-console.log("[CORS allowList]", allowList);
-
-const corsOptions = {
-  credentials: true,
-  origin(origin, cb) {
-    // allow same-origin/no-origin (curl, server-to-server) or anything in allowList
-    if (!origin || allowList.includes(origin)) return cb(null, true);
-    return cb(new Error("Not allowed by CORS"));
-  },
-};
-
+console.log("[CORS allowedOrigins]", allowedOrigins);
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
@@ -144,7 +117,33 @@ app.use("/api/ceo", require("./routes/ceo.routes"));
 // routes
 
 app.get("/", (req, res)=>{
-  res.send("⚡️");
+  res.send("DP360 Backend Running");
+});
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+  });
+});
+
+app.use((err, req, res, next) => {
+  const status = err.status || err.statusCode || 500;
+  const isCorsError = /CORS/i.test(err.message || "");
+
+  console.error("[Express error]", {
+    status,
+    method: req.method,
+    path: req.originalUrl,
+    origin: req.headers.origin,
+    message: err.message,
+    stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+  });
+
+  res.status(isCorsError ? 403 : status).json({
+    success: false,
+    message: isCorsError ? err.message : "Internal server error",
+  });
 });
 
 

@@ -9,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const currency = process.env.CURRENCY || "gbp";
 const deliveryCharge = parseFloat(process.env.DELIVERY_CHARGE || "4");
-const frontend_URL = process.env.FRONTEND_URL || "http://localhost:3001";
+const frontend_URL = process.env.FRONTEND_URL || "https://dp360-mvp.netlify.app";
 
 export const placeOrder = async (req, res) => {
   const { items, amount, address, orderType, name, email: bodyEmail } = req.body;

@@ -11,12 +11,24 @@ const stripe = require('stripe')(CONFIG.STRIPE_SECRET);
 const isProd = process.env.NODE_ENV === 'production';
 const COOKIE_EXP_MS         = Number(process.env.COOKIE_EXPIRY) || 15 * 60 * 1000;
 const COOKIE_REFRESH_EXP_MS = Number(process.env.COOKIE_EXPIRY_REFRESH) || 30 * 24 * 60 * 60 * 1000;
-// Only set a cookie domain in PROD and if you have a real hostname (not an IP)
-const COOKIE_DOMAIN = isProd && process.env.FRONTEND_DOMAIN_COOKIE ? process.env.FRONTEND_DOMAIN_COOKIE : undefined;
+const normalizeCookieDomain = (value) => {
+    if (!value) return undefined;
+
+    try {
+        return new URL(value).hostname;
+    } catch {
+        return value;
+    }
+};
+
+// Omit cookie domain by default on Render. Cross-site cookies only need secure + sameSite none.
+const COOKIE_DOMAIN = isProd && process.env.COOKIE_DOMAIN
+    ? normalizeCookieDomain(process.env.COOKIE_DOMAIN)
+    : undefined;
 
 const authCookieOptions = (maxAge) => ({
   httpOnly: true,
-  secure: isProd,                   // false in dev so cookie works on http://localhost
+  secure: isProd,
   sameSite: isProd ? 'none' : 'lax',
   path: '/',
   maxAge,
@@ -31,6 +43,14 @@ exports.signIn = async (req, res) => {
         const username = req.body.username;
         const password = req.body.password;
 
+        if (!CONFIG.JWT_SECRET) {
+            console.error("[auth/signin] Missing JWT_SECRET");
+            return res.status(500).json({
+                success: false,
+                message: "Authentication service is not configured."
+            });
+        }
+
         if(!(username && password)) {
             return res.status(400).json({
                 success: false,
@@ -41,25 +61,7 @@ exports.signIn = async (req, res) => {
         const result = await signInDB(username, password);
 
         if(result) {
-            // set cookie
-            const cookieOptions = {
-                expires: new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY)),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            };
-
-            const refreshTokenExpiry = new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY_REFRESH));
-            const cookieRefreshTokenOptions = {
-                expires: refreshTokenExpiry,
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            };
+            const refreshTokenExpiry = new Date(Date.now() + COOKIE_REFRESH_EXP_MS);
 
             result.password = undefined;
 
@@ -74,14 +76,11 @@ exports.signIn = async (req, res) => {
             const accessToken = generateAccessToken(payload);
             const refreshToken = generateRefreshToken(payload);
 
-            res.cookie('accessToken', accessToken, cookieOptions);
-            res.cookie('refreshToken', refreshToken, cookieRefreshTokenOptions);
+            res.cookie('accessToken', accessToken, authCookieOptions(COOKIE_EXP_MS));
+            res.cookie('refreshToken', refreshToken, authCookieOptions(COOKIE_REFRESH_EXP_MS));
             res.cookie('salespulsesaas__authenticated', true, {
-                expires: new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY_REFRESH)),
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
+                ...authCookieOptions(COOKIE_REFRESH_EXP_MS),
+                httpOnly: false,
             })
 
             // set refresh token in DB.
@@ -108,7 +107,15 @@ exports.signIn = async (req, res) => {
 
 
     } catch (error) {
-        console.error(error);
+        console.error("[auth/signin] Login failed", {
+            username: req.body?.username,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            name: error.name,
+            message: error.message,
+            stack: process.env.NODE_ENV === "production" ? undefined : error.stack,
+        });
         return res.status(500).json({
             success: false,
             message: "We're facing some issues! Please try later!"
