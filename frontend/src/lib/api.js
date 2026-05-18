@@ -1,7 +1,7 @@
 import axios from "axios";
+import { API } from "../config/config";
 
-// baseURL is already set globally in App.jsx, but we set it here too for safety
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const baseURL = API;
 
 function getToken() {
   // Try common keys you might be using in other pages

@@ -21,16 +21,17 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+    const status = error?.response?.status;
 
     const user = getUserDetailsInLocalStorage();
     const role = user?.role || "";
 
-    if(error.response.status === 402) { // payment required, subscription is not active
+    if(status === 402) { // payment required, subscription is not active
       window.location.href = "/dashboard/inactive-subscription"
       return;
     }
 
-    if ((error.response.status === 401 || error.response.status === 403) && !originalRequest._retry) {
+    if ((status === 401 || status === 403) && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true;
 
       retryCounter+=1;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import ApiClient from '../helpers/ApiClient';
 
 const useStoreSettings = (tenantId) => {
   const [storeSettings, setStoreSettings] = useState(null);
@@ -8,7 +8,7 @@ const useStoreSettings = (tenantId) => {
     const fetchSettings = async () => {
       try {
         if (!tenantId) return;
-        const res = await axios.get(`http://localhost:3000/api/v1/settings/public-store-details/${tenantId}`);
+        const res = await ApiClient.get(`/settings/public-store-details/${tenantId}`);
         console.log("✅ Store settings fetched:", res.data);
         if (res.data?.success && res.data?.data) {
           setStoreSettings(res.data.data);

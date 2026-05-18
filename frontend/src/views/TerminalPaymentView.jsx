@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { buildApiUrl } from "../config/api";
 
 const TerminalPaymentView = () => {
   const [terminal, setTerminal] = useState(null);
@@ -13,8 +14,9 @@ const TerminalPaymentView = () => {
         const stripeScript = await import("https://js.stripe.com/terminal/v1/");
         const terminalInstance = stripeScript.StripeTerminal.create({
           onFetchConnectionToken: async () => {
-            const res = await fetch("/api/v1/terminal/connection-token", {
+            const res = await fetch(buildApiUrl("/terminal/connection-token"), {
               method: "POST",
+              credentials: "include",
             });
             const data = await res.json();
             return data.secret;
@@ -66,8 +68,9 @@ const TerminalPaymentView = () => {
       return;
     }
 
-    const paymentIntentRes = await fetch("/api/v1/terminal/create-payment-intent", {
+    const paymentIntentRes = await fetch(buildApiUrl("/terminal/create-payment-intent"), {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         amount: Math.round(parseFloat(amount) * 100),

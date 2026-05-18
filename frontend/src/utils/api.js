@@ -1,22 +1,8 @@
 import axios from "axios";
+import { API } from "../config/config";
 
-/**
- * Normalize backend base and add /api/v1 exactly once.
- * Works whether VITE_BACKEND is:
- *  - http://localhost:3000
- *  - http://localhost:3000/api
- *  - http://localhost:3000/api/v1
- */
-const ENV_BACKEND =
-  import.meta.env.VITE_BACKEND || import.meta.env.VITE_API_URL || "http://localhost:3000";
-
-const trimEnd = (s) => (s || "").replace(/\/+$/, "");
-const stripApiSuffix = (u) => trimEnd(u).replace(/\/api(?:\/v\d+)?$/i, "");
-
-const ROOT = stripApiSuffix(ENV_BACKEND);      // -> http://localhost:3000
-const API_V1 = `${ROOT}/api/v1`;               // -> http://localhost:3000/api/v1
-const SALES_BASE = `${API_V1}/reports/sales`;  // -> http://localhost:3000/api/v1/reports/sales
-const SETTINGS_BASE_URL = API_V1;              // -> http://localhost:3000/api/v1
+const SALES_BASE = `${API}/reports/sales`;
+const SETTINGS_BASE_URL = API;
 
 // axios instance that always sends cookies
 const http = axios.create({ withCredentials: true });

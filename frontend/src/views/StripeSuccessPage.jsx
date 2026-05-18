@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axios from "axios";
+import { API } from "../config/config";
 
 export default function StripeSuccessPage() {
   const navigate = useNavigate();
@@ -25,9 +26,7 @@ export default function StripeSuccessPage() {
 
       try {
         await axios.post(
-          `${
-            import.meta.env.VITE_BACKEND
-          }/orders/public/complete-and-pay-order`,
+          `${API}/orders/public/complete-and-pay-order`,
           {
             orderIds,
             subTotal,

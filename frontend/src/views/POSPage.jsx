@@ -133,7 +133,7 @@ export default function POSPage() {
         // REQUIRED: fetch a connection token from your backend
         onFetchConnectionToken: async () => {
           const { data } = await axios.post(
-            "/api/v1/terminal/connection-token",
+            `${API}/terminal/connection-token`,
             {},
             { withCredentials: true }
           );
@@ -200,7 +200,7 @@ export default function POSPage() {
     if (!terminal) throw new Error("Terminal not ready");
     // Ask your backend to create a PI for card_present
     const { data } = await axios.post(
-      "/api/v1/terminal/create-payment-intent",
+      `${API}/terminal/create-payment-intent`,
       {
         amount: Math.round(Number(state.payableTotal) * 100), // smallest currency unit
         currency: "inr", // or from store settings

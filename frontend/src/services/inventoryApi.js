@@ -1,9 +1,11 @@
 // src/services/inventoryApi.js
-const BASE = "/api"; // change if needed
+import { API } from "../config/config";
+
+const buildUrl = (path) => new URL(`${API}${path}`);
 
 // GET inventory items (optionally filter by ?from=YYYY-MM-DD&to=YYYY-MM-DD)
 export async function getInventoryItems({ from, to } = {}) {
-  const url = new URL(`${BASE}/inventory/items`, window.location.origin);
+  const url = buildUrl("/inventory-items");
   if (from) url.searchParams.set("from", from);
   if (to)   url.searchParams.set("to", to);
   const r = await fetch(url.toString(), { credentials: "include" });
@@ -16,7 +18,7 @@ export async function getInventoryItems({ from, to } = {}) {
 
 // GET menu items mapped to an inventory_id to infer value (unit price)
 export async function getMenuItemsByInventory(inventoryId) {
-  const url = new URL(`${BASE}/menu/items`, window.location.origin);
+  const url = buildUrl("/menu-items");
   url.searchParams.set("inventory_id", inventoryId);
   const r = await fetch(url.toString(), { credentials: "include" });
   if (!r.ok) return [];
@@ -28,7 +30,7 @@ export async function getMenuItemsByInventory(inventoryId) {
 // GET usage series (optional). Returns [{date:'YYYY-MM-DD', usage:number}]
 export async function getInventoryUsageSeries({ from, to } = {}) {
   try {
-    const url = new URL(`${BASE}/reports/inventory-usage`, window.location.origin);
+    const url = buildUrl("/reports/inventory-usage");
     if (from) url.searchParams.set("from", from);
     if (to)   url.searchParams.set("to", to);
     const r = await fetch(url.toString(), { credentials: "include" });
@@ -43,8 +45,8 @@ export async function getInventoryUsageSeries({ from, to } = {}) {
 // PUT: inline update of inventory quantity
 export async function updateInventoryQuantity(id, quantity) {
   try {
-    const r = await fetch(`${BASE}/inventory/items/${id}`, {
-      method: "PUT",
+    const r = await fetch(buildUrl(`/inventory-items/update/${id}`).toString(), {
+      method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quantity }),

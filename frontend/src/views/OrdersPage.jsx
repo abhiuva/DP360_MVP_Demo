@@ -23,7 +23,7 @@ import {
   IconRefresh,
   IconX,
 } from "@tabler/icons-react";
-import { VITE_BACKEND_SOCKET_IO, iconStroke } from "../config/config";
+import { API, VITE_BACKEND_SOCKET_IO, iconStroke } from "../config/config";
 import { CURRENCIES } from "../config/currencies.config";
 import { PAYMENT_ICONS } from "../config/payment_icons";
 import { setDetailsForReceiptPrint } from "../helpers/ReceiptHelper";
@@ -344,7 +344,7 @@ export default function OrdersPage() {
         selectedPayment.title.toLowerCase().includes("stripe")
       ) {
         const response = await axios.post(
-          `${import.meta.env.VITE_BACKEND}/orders/stripe-checkout`,
+          `${API}/orders/stripe-checkout`,
           {
             orderIds: payload.orderIds,
             total: payload.total,

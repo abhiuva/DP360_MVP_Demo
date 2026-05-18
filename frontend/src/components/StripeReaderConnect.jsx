@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import ApiClient from "../helpers/ApiClient";
 
 export default function StripeReaderConnect() {
   const [reader, setReader] = useState(null);
@@ -7,7 +7,7 @@ export default function StripeReaderConnect() {
 
   const fetchConnectionToken = async () => {
     try {
-      const res = await axios.post("/terminal/connection_token");
+      const res = await ApiClient.post("/terminal/connection-token");
       return res.data.secret;
     } catch (err) {
       toast({
