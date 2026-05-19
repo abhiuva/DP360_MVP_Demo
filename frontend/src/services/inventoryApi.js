@@ -1,5 +1,6 @@
 // src/services/inventoryApi.js
 import { API } from "../config/config";
+import { authFetch } from "../config/api";
 
 const buildUrl = (path) => new URL(`${API}${path}`);
 
@@ -8,7 +9,7 @@ export async function getInventoryItems({ from, to } = {}) {
   const url = buildUrl("/inventory-items");
   if (from) url.searchParams.set("from", from);
   if (to)   url.searchParams.set("to", to);
-  const r = await fetch(url.toString(), { credentials: "include" });
+  const r = await authFetch(url.toString());
   if (!r.ok) throw new Error("Failed to load inventory items");
   const data = await r.json();
   // shape from inventory_items: id, title, supplier_name, category, quantity,
@@ -20,7 +21,7 @@ export async function getInventoryItems({ from, to } = {}) {
 export async function getMenuItemsByInventory(inventoryId) {
   const url = buildUrl("/menu-items");
   url.searchParams.set("inventory_id", inventoryId);
-  const r = await fetch(url.toString(), { credentials: "include" });
+  const r = await authFetch(url.toString());
   if (!r.ok) return [];
   const data = await r.json();
   // menu_items has price and net_price; prefer net_price. :contentReference[oaicite:1]{index=1}
@@ -33,7 +34,7 @@ export async function getInventoryUsageSeries({ from, to } = {}) {
     const url = buildUrl("/reports/inventory-usage");
     if (from) url.searchParams.set("from", from);
     if (to)   url.searchParams.set("to", to);
-    const r = await fetch(url.toString(), { credentials: "include" });
+    const r = await authFetch(url.toString());
     if (!r.ok) return [];
     const data = await r.json();
     return Array.isArray(data) ? data : (data?.series || []);
@@ -45,9 +46,8 @@ export async function getInventoryUsageSeries({ from, to } = {}) {
 // PUT: inline update of inventory quantity
 export async function updateInventoryQuantity(id, quantity) {
   try {
-    const r = await fetch(buildUrl(`/inventory-items/update/${id}`).toString(), {
+    const r = await authFetch(buildUrl(`/inventory-items/update/${id}`).toString(), {
       method: "POST",
-      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ quantity }),
     });

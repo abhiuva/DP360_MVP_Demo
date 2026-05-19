@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const trimTrailingSlash = (value = "") => value.replace(/\/+$/, "");
 
 export const API_ROOT = trimTrailingSlash(
@@ -7,3 +9,5 @@ export const API_ROOT = trimTrailingSlash(
 );
 
 export const API_BASE = `${API_ROOT}/api`;
+
+axios.defaults.withCredentials = true;

@@ -91,8 +91,17 @@ import EmployeesPage from "/src/views/EmployeeManagement/EmployeesPage.jsx";
 
 import axios from "axios";
 import { API } from "./config/config";
+import { getAccessTokenInLocalStorage } from "./helpers/UserDetails";
 axios.defaults.baseURL = API;
 axios.defaults.withCredentials = true;
+axios.interceptors.request.use((config) => {
+  config.withCredentials = true;
+  const token = getAccessTokenInLocalStorage();
+  if (token && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default function App() {
   const [isNavbarCollapsed, setIsNavbarCollapsed] = useState(

@@ -34,6 +34,7 @@ const paymentsRoutes = require("./routes/payments.routes")
 const salesRoutes = require("./routes/sales.routes");
 const ceoRoutes = require("./routes/ceo.routes");
 const terminalRoutes = require("./routes/terminal.routes");
+const clientCompatRoutes = require("./routes/client_compat.routes");
 const { allowedOrigins, corsOptions } = require("./config/cors");
 
 
@@ -112,6 +113,7 @@ app.use("/api/v1/terminal", terminalRoutes);
 app.use("/api/v1/reports/sales", salesRoutes);
 app.use("/api/v1/ceo", ceoRoutes);
 app.use("/api/ceo", require("./routes/ceo.routes"));
+app.use("/api", clientCompatRoutes);
 
 
 // routes

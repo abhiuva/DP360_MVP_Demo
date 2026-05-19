@@ -20,7 +20,7 @@ import { SCOPES } from "../config/scopes";
 import { getUserDetailsInLocalStorage } from "../helpers/UserDetails";
 import AsyncCreatableSelect from "react-select/async-creatable";
 import DialogAddCustomer from "../components/DialogAddCustomer";
-import { buildApiUrl } from "../config/api";
+import { authFetch, buildApiUrl } from "../config/api";
 
 export default function ReservationPage() {
   const { role, scope } = getUserDetailsInLocalStorage();
@@ -238,9 +238,7 @@ export default function ReservationPage() {
 
   const fetchUnavailableTables = async (selectedDateTime) => {
     try {
-      const response = await fetch(buildApiUrl("/reservations?type=all"), {
-        credentials: "include",
-      });
+      const response = await authFetch(buildApiUrl("/reservations?type=all"));
       const allReservations = await response.json();
 
       const start = new Date(selectedDateTime);

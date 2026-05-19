@@ -17,3 +17,22 @@ export const buildApiUrl = (path = "") => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   return `${API_BASE_URL}${normalizedPath}`;
 };
+
+export const getAuthHeaders = (headers = {}) => {
+  const token =
+    localStorage.getItem("salespulsesaas_access_token") ||
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken");
+
+  return {
+    ...headers,
+    ...(token ? { Authorization: `Bearer ${token.replace(/^"|"$/g, "")}` } : {}),
+  };
+};
+
+export const authFetch = (url, options = {}) =>
+  fetch(url, {
+    ...options,
+    credentials: "include",
+    headers: getAuthHeaders(options.headers || {}),
+  });

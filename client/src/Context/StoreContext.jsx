@@ -48,9 +48,12 @@ const StoreContextProvider = (props) => {
   useEffect(() => {
     const fetchFoodList = async () => {
       try {
-        const response = await axios.get(`${API_BASE}/food/list`);
-        if (response.data.success) {
-          setFoodList(response.data.data);
+        const response = await axios.get(`${API_BASE}/food/list`, {
+          params: tenant_id ? { tenantId: tenant_id } : undefined,
+        });
+        const payload = response?.data;
+        if (payload?.success && Array.isArray(payload.data)) {
+          setFoodList(payload.data);
         } else {
           console.error("Failed to fetch food list");
         }

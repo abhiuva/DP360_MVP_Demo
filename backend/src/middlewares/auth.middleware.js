@@ -2,6 +2,21 @@ const { getUserDB } = require("../services/user.service");
 const { verifyToken } = require("../utils/jwt")
 const { ROLES } = require("../config/user.config");
 const { getAdminUserDB } = require("../services/superadmin.service");
+const { authCookieClearOptions } = require("../utils/cookieOptions");
+
+const logAuthFailure = (req, reason, error) => {
+    console.warn("[auth middleware]", {
+        reason,
+        method: req.method,
+        path: req.originalUrl,
+        origin: req.headers.origin,
+        hasAuthorizationHeader: Boolean(req.headers.authorization),
+        hasAccessCookie: Boolean(req.cookies?.accessToken),
+        hasRefreshCookie: Boolean(req.cookies?.refreshToken),
+        errorName: error?.name,
+        errorMessage: error?.message,
+    });
+};
 
 exports.isLoggedIn = (req, res, next) => {
     let token;
@@ -13,6 +28,7 @@ exports.isLoggedIn = (req, res, next) => {
     }
 
     if(!token) {
+        logAuthFailure(req, "missing access token");
         return res.status(401).json({
             success: false,
             message: "Login to access this area!"
@@ -30,7 +46,7 @@ exports.isAuthenticated = (req, res, next) => {
         req.user = decodedToken;
         next();
     } catch (error) {
-        console.error(error);
+        logAuthFailure(req, "access token verification failed", error);
         return res.status(401).json({
             success: false,
             message: "Unauthorized access!"
@@ -58,6 +74,7 @@ exports.hasRefreshToken = (req, res, next) => {
     }
 
     if(!token) {
+        logAuthFailure(req, "missing refresh token");
         return res.status(401).json({
             success: false,
             message: "Login again to access this area!"
@@ -69,30 +86,13 @@ exports.hasRefreshToken = (req, res, next) => {
 
         next();
     } catch (error) {
-        console.error(error);
+        logAuthFailure(req, "refresh token verification failed", error);
 
-        res.clearCookie('accessToken',{
-            expires: new Date(Date.now() ),
-            httpOnly: true,
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
-        });
-        res.clearCookie('refreshToken', {
-            expires: new Date(Date.now()),
-            httpOnly: true,
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
-        }); 
-        res.clearCookie('salespulse__authenticated', {
-            expires: new Date(Date.now()),
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
+        res.clearCookie('accessToken', authCookieClearOptions());
+        res.clearCookie('refreshToken', authCookieClearOptions()); 
+        res.clearCookie('salespulsesaas__authenticated', {
+            ...authCookieClearOptions(),
+            httpOnly: false,
         });
 
         return res.status(401).json({

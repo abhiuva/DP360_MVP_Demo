@@ -4,6 +4,14 @@ const { removeRefreshTokenDB, addRefreshTokenDB, verifyRefreshTokenDB } = requir
 const { signInDB, getAdminUserDB, getActiveTenantsDB, getInActiveTenantsDB,getAllTenantsDB,  getOrdersProcessedTodayDB, getSalesVolumeTodayDB, getMRRValueDB, getARRValueDB, getRestaurantsTotalCustomersDB, getSuperAdminTopSellingItemsDB, getSuperAdminSalesVolumeDB, getSuperAdminOrdersProcessedDB, getTenantsDB , addTenantDB , updateTenantDB , getTenantCntByIdDB ,getTenantDetailsByIdDB , logoutAllUsersOfTenantDB , deleteTenantDB , getTenantsDataByStatusDB, getTenantSubscriptionHistoryDB, getTenantTotalUsersDB, getTenantDetailsDB, getTenantStoreDetailsDB } = require("../services/superadmin.service")
 const { generateAccessToken, generateRefreshToken } = require("../utils/jwt");
 const {checkEmailExistsDB} = require('../services/auth.service');
+const {
+    authCookieOptions,
+    authCookieClearOptions,
+    readableAuthCookieOptions,
+} = require("../utils/cookieOptions");
+
+const COOKIE_EXP_MS = Number(process.env.COOKIE_EXPIRY) || 15 * 60 * 1000;
+const COOKIE_REFRESH_EXP_MS = Number(process.env.COOKIE_EXPIRY_REFRESH) || 30 * 24 * 60 * 60 * 1000;
 
 exports.signIn = async (req, res) => {
     try {
@@ -21,25 +29,7 @@ exports.signIn = async (req, res) => {
         const result = await signInDB(username, password);
 
         if (result) {
-            // set cookie
-            const cookieOptions = {
-                expires: new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY)),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            };
-
-            const refreshTokenExpiry = new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY_REFRESH));
-            const cookieRefreshTokenOptions = {
-                expires: refreshTokenExpiry,
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            };
+            const refreshTokenExpiry = new Date(Date.now() + COOKIE_REFRESH_EXP_MS);
 
             result.password = undefined;
 
@@ -51,15 +41,9 @@ exports.signIn = async (req, res) => {
             const accessToken = generateAccessToken(payload);
             const refreshToken = generateRefreshToken(payload);
 
-            res.cookie('accessToken', accessToken, cookieOptions);
-            res.cookie('refreshToken', refreshToken, cookieRefreshTokenOptions);
-            res.cookie('salespulsesaas__authenticated', true, {
-                expires: new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY_REFRESH)),
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            })
+            res.cookie('accessToken', accessToken, authCookieOptions(COOKIE_EXP_MS));
+            res.cookie('refreshToken', refreshToken, authCookieOptions(COOKIE_REFRESH_EXP_MS));
+            res.cookie('salespulsesaas__authenticated', true, readableAuthCookieOptions(COOKIE_REFRESH_EXP_MS))
 
             // set refresh token in DB.
             const deviceDetails = req.useragent;
@@ -97,27 +81,19 @@ exports.signOut = async (req, res) => {
         const user = req.user;
         const refreshToken = req.cookies.refreshToken;
 
-        const cookieOptions = {
-            expires: new Date(Date.now()),
-            httpOnly: true,
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
-        };
+        const cookieOptions = authCookieClearOptions();
 
         res.clearCookie('accessToken', cookieOptions);
         res.clearCookie('refreshToken', cookieOptions);
         res.clearCookie('salespulsesaas__authenticated', {
-            expires: new Date(Date.now()),
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
+            ...cookieOptions,
+            httpOnly: false,
         });
 
         // remove refreshToken in DB.
-        await removeRefreshTokenDB(user.username, refreshToken);
+        if (refreshToken) {
+            await removeRefreshTokenDB(user.username, refreshToken);
+        }
 
         return res.status(200).json({
             success: true,
@@ -142,16 +118,6 @@ exports.getNewAccessToken = async (req, res) => {
         const isExist = await verifyRefreshTokenDB(refreshToken);
 
         if(isExist) {
-            // generate new access token
-            // set cookie
-            const cookieOptions = {
-                expires: new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY)),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            };
             const u = await getAdminUserDB(user.username);
             const payload = {
                 username: u.email,
@@ -160,7 +126,7 @@ exports.getNewAccessToken = async (req, res) => {
             }
             const accessToken = generateAccessToken(payload);
 
-            res.cookie('accessToken', accessToken, cookieOptions);
+            res.cookie('accessToken', accessToken, authCookieOptions(COOKIE_EXP_MS));
 
             return res.status(200).json({
                 success: true,
@@ -168,28 +134,11 @@ exports.getNewAccessToken = async (req, res) => {
                 accessToken
             });
         } else {
-            res.clearCookie('accessToken', {
-                expires: new Date(Date.now()),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            });
-            res.clearCookie('refreshToken', {
-                expires: new Date(Date.now()),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            });
+            res.clearCookie('accessToken', authCookieClearOptions());
+            res.clearCookie('refreshToken', authCookieClearOptions());
             res.clearCookie('salespulsesaas__authenticated', {
-                expires: new Date(Date.now()),
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
+                ...authCookieClearOptions(),
+                httpOnly: false,
             });
             return res.status(401).json({
                 success: false,

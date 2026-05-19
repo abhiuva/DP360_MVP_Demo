@@ -6,34 +6,15 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { deleteUserRefreshTokensDB, updateUserPasswordDB } = require("../services/user.service");
 const stripe = require('stripe')(CONFIG.STRIPE_SECRET);
+const {
+    authCookieOptions,
+    authCookieClearOptions,
+    readableAuthCookieOptions,
+} = require("../utils/cookieOptions");
 
 
-const isProd = process.env.NODE_ENV === 'production';
 const COOKIE_EXP_MS         = Number(process.env.COOKIE_EXPIRY) || 15 * 60 * 1000;
 const COOKIE_REFRESH_EXP_MS = Number(process.env.COOKIE_EXPIRY_REFRESH) || 30 * 24 * 60 * 60 * 1000;
-const normalizeCookieDomain = (value) => {
-    if (!value) return undefined;
-
-    try {
-        return new URL(value).hostname;
-    } catch {
-        return value;
-    }
-};
-
-// Omit cookie domain by default on Render. Cross-site cookies only need secure + sameSite none.
-const COOKIE_DOMAIN = isProd && process.env.COOKIE_DOMAIN
-    ? normalizeCookieDomain(process.env.COOKIE_DOMAIN)
-    : undefined;
-
-const authCookieOptions = (maxAge) => ({
-  httpOnly: true,
-  secure: isProd,
-  sameSite: isProd ? 'none' : 'lax',
-  path: '/',
-  maxAge,
-  ...(COOKIE_DOMAIN ? { domain: COOKIE_DOMAIN } : {}),
-});
 
 
 
@@ -78,10 +59,7 @@ exports.signIn = async (req, res) => {
 
             res.cookie('accessToken', accessToken, authCookieOptions(COOKIE_EXP_MS));
             res.cookie('refreshToken', refreshToken, authCookieOptions(COOKIE_REFRESH_EXP_MS));
-            res.cookie('salespulsesaas__authenticated', true, {
-                ...authCookieOptions(COOKIE_REFRESH_EXP_MS),
-                httpOnly: false,
-            })
+            res.cookie('salespulsesaas__authenticated', true, readableAuthCookieOptions(COOKIE_REFRESH_EXP_MS))
 
             // set refresh token in DB.
             const deviceDetails = req.useragent;
@@ -170,32 +148,17 @@ exports.signOut = async (req, res) => {
         const user = req.user;
         const refreshToken = req.cookies.refreshToken;
 
-        res.clearCookie('accessToken', {
-            expires: new Date(Date.now() ),
-            httpOnly: true,
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
-        });
-        res.clearCookie('refreshToken', {
-            expires: new Date(Date.now()),
-            httpOnly: true,
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
-        });
+        res.clearCookie('accessToken', authCookieClearOptions());
+        res.clearCookie('refreshToken', authCookieClearOptions());
         res.clearCookie('salespulsesaas__authenticated', {
-            expires: new Date(Date.now()),
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
+            ...authCookieClearOptions(),
+            httpOnly: false,
         });
 
         // remove refreshToken in DB.
-        await removeRefreshTokenDB(user.username, refreshToken);
+        if (refreshToken) {
+            await removeRefreshTokenDB(user.username, refreshToken);
+        }
 
         return res.status(200).json({
             success: true,
@@ -222,14 +185,6 @@ exports.getNewAccessToken = async (req, res) => {
         if(isExist) {
             // generate new access token
             // set cookie
-            const cookieOptions = {
-                expires: new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY)),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            };
             const u = await getUserDB(user.username, user.tenant_id);
             const payload = {
                 tenant_id: u.tenant_id,
@@ -241,7 +196,7 @@ exports.getNewAccessToken = async (req, res) => {
             }
             const accessToken = generateAccessToken(payload);
 
-            res.cookie('accessToken', accessToken, cookieOptions);
+            res.cookie('accessToken', accessToken, authCookieOptions(COOKIE_EXP_MS));
 
             return res.status(200).json({
                 success: true,
@@ -249,28 +204,11 @@ exports.getNewAccessToken = async (req, res) => {
                 accessToken
             });
         } else {
-            res.clearCookie('accessToken', {
-                expires: new Date(Date.now() ),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            });
-            res.clearCookie('refreshToken', {
-                expires: new Date(Date.now()),
-                httpOnly: true,
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
-            });
+            res.clearCookie('accessToken', authCookieClearOptions());
+            res.clearCookie('refreshToken', authCookieClearOptions());
             res.clearCookie('salespulsesaas__authenticated', {
-                expires: new Date(Date.now()),
-                domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-                sameSite: false,
-                secure: process.env.NODE_ENV == "production",
-                path: "/"
+                ...authCookieClearOptions(),
+                httpOnly: false,
             });
             return res.status(401).json({
                 success: false,
@@ -465,16 +403,6 @@ exports.cancelSubscription = async (req, res) => {
             id
         );
 
-        // generate new access token
-        // set cookie
-        const cookieOptions = {
-            expires: new Date(Date.now() + parseInt(CONFIG.COOKIE_EXPIRY)),
-            httpOnly: true,
-            domain: CONFIG.FRONTEND_DOMAIN_COOKIE,
-            sameSite: false,
-            secure: process.env.NODE_ENV == "production",
-            path: "/"
-        };
         const payload = {
             tenant_id: user.tenant_id,
             is_active: 0,
@@ -485,7 +413,7 @@ exports.cancelSubscription = async (req, res) => {
         }
         const accessToken = generateAccessToken(payload);
 
-        res.cookie('accessToken', accessToken, cookieOptions);
+        res.cookie('accessToken', accessToken, authCookieOptions(COOKIE_EXP_MS));
 
         return res.status(200).json({
             success: true,

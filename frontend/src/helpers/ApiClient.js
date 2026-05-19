@@ -1,10 +1,15 @@
 import axios from "axios";
 import { API } from "../config/config";
 import Cookie from "js-cookie";
-import { getAccessTokenInLocalStorage, getUserDetailsInLocalStorage } from "./UserDetails";
+import {
+  getAccessTokenInLocalStorage,
+  getUserDetailsInLocalStorage,
+  saveAuthSessionInLocalStorage,
+} from "./UserDetails";
 
 const apiClient = axios.create({
   baseURL: API,
+  withCredentials: true,
 });
 
 apiClient.interceptors.request.use(
@@ -35,7 +40,12 @@ apiClient.interceptors.response.use(
       return;
     }
 
-    if ((status === 401 || status === 403) && originalRequest && !originalRequest._retry) {
+    if (
+      (status === 401 || status === 403) &&
+      originalRequest &&
+      !originalRequest._retry &&
+      !String(originalRequest.url || "").includes("refresh-token")
+    ) {
       originalRequest._retry = true;
 
       retryCounter+=1;
@@ -52,7 +62,6 @@ apiClient.interceptors.response.use(
 
       try {
         const res = role == "superadmin"? await apiClient.post("/superadmin/refresh-token") : await apiClient.post("/auth/refresh-token");
-        const data = res.data;
 
         if(res.status == 401 || res.status == 403) {
           if(role == "superadmin") {
@@ -61,6 +70,14 @@ apiClient.interceptors.response.use(
             window.location.href = "/login";
           }
           return;
+        }
+        if (res?.data?.accessToken) {
+          saveAuthSessionInLocalStorage({
+            user,
+            accessToken: res.data.accessToken,
+          });
+          originalRequest.headers = originalRequest.headers || {};
+          originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
         }
         retryCounter = 0;
         return apiClient(originalRequest);
