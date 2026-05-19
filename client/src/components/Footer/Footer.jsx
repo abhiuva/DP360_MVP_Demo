@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Footer.css";
 import { assets } from "../../assets/assets";
 import axios from "axios";
+import { API_BASE } from "../../config/api";
 
 const Footer = () => {
   const [storeInfo, setStoreInfo] = useState({});
@@ -11,9 +12,7 @@ const Footer = () => {
     const fetchStoreInfo = async () => {
       try {
         const res = await axios.get(
-          `${
-            import.meta.env.VITE_BACKEND
-          }/settings/public-store-details/${tenantId}`
+          `${API_BASE}/settings/public-store-details/${tenantId}`
         );
         if (res.data.success) {
           setStoreInfo(res.data.data);

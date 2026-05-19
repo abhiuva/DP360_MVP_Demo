@@ -9,6 +9,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { addMenuItem, deleteMenuItem, useMenuItems } from "../../controllers/menu_item.controller";
 import { useInventoryItems } from "../../controllers/inventory.controller";
 import { getImageURL } from "../../helpers/ImageHelper";
+import { itemMatchesCategory, itemMatchesSearch, normalizeList } from "../../helpers/menuItems";
 
 export default function MenuItemsSettingsPage() {
   const navigate = useNavigate();
@@ -37,6 +38,9 @@ export default function MenuItemsSettingsPage() {
   } = useCategories();
 
   const { searchQuery, selectedCategory, selectedItemId } = state;
+  const visibleMenuItems = normalizeList(menuItems)
+    .filter((menuItem) => itemMatchesCategory(menuItem, selectedCategory))
+    .filter((menuItem) => itemMatchesSearch(menuItem, searchQuery));
   const { APIURL: APIURLInventory, data: inventoryItems, error: errorInventory, isLoading: isLoadingInventory } = useInventoryItems();
   const { APIURL: APIURLTaxes, data: taxes, error: errorTaxes, isLoading: isLoadingTaxes } = useTaxes();
 
@@ -200,17 +204,12 @@ export default function MenuItemsSettingsPage() {
       </div>
 
       <div className="mt-8 w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {menuItems.filter((menuItem) => {
-          if (selectedCategory == "all") {
-            return true;
-          }
-          return selectedCategory == menuItem.category_id;
-        }).filter((menuItem) => {
-          if (!searchQuery) {
-            return true;
-          }
-          return new String(menuItem.title).trim().toLowerCase().includes(searchQuery.trim().toLowerCase());
-        }).map((menuItem, index) => {
+        {visibleMenuItems.length === 0 && (
+          <div className="col-span-full text-center text-sm text-gray-400 py-12">
+            No menu items available.
+          </div>
+        )}
+        {visibleMenuItems.map((menuItem, index) => {
           const { id, title, price, net_price, tax_id, category_id, category_title, addons, variants, status } = menuItem;
           const statusColor = status === "Available" ? "green" : "red";
           return (

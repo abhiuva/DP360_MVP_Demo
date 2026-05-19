@@ -21,6 +21,7 @@ import { getImageURL } from "../helpers/ImageHelper";
 import toast from "react-hot-toast";
 import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import { getQRMenuLink } from "../helpers/QRMenuHelper";
+import { itemMatchesCategory, itemMatchesSearch, normalizeList } from "../helpers/menuItems";
 export default function QRMenuPage() {
 
   const navigate = useNavigate();
@@ -64,8 +65,8 @@ export default function QRMenuPage() {
           ...state,
           isLoading: false,
           storeSettings: data?.storeSettings,
-          categories: data?.categories,
-          menuItems: data?.menuItems,
+          categories: normalizeList(data?.categories),
+          menuItems: normalizeList(data?.menuItems),
           storeTable: data?.storeTable || null,
           cartItems: [...storedCart],
           currency: currency?.symbol || "",
@@ -128,6 +129,9 @@ export default function QRMenuPage() {
   }
 
   const QR_MENU_LINK = getQRMenuLink(qrcode);
+  const visibleMenuItems = normalizeList(menuItems)
+    .filter((item) => itemMatchesCategory(item, currentCategory))
+    .filter((item) => itemMatchesSearch(item, searchQuery));
 
   const btnShare = async () => {
     const shareData = {
@@ -369,27 +373,12 @@ export default function QRMenuPage() {
 
         {/* menu items */}
         <div className="p-2 w-full md:w-96 mx-auto mt-4 flex flex-col gap-4">
-          {menuItems
-            .filter((item) => {
-              const { category_id } = item;
-              if (currentCategory == "all") {
-                return true;
-              }
-              if (currentCategory == category_id) {
-                return true;
-              }
-              return false;
-            })
-            .filter((menuItem) => {
-              if (!searchQuery) {
-                return true;
-              }
-              return new String(menuItem.title)
-                .trim()
-                .toLowerCase()
-                .includes(searchQuery.trim().toLowerCase());
-            })
-            .map((item, i) => {
+          {visibleMenuItems.length === 0 && (
+            <div className="text-center text-sm text-gray-400 py-12">
+              No menu items available.
+            </div>
+          )}
+          {visibleMenuItems.map((item, i) => {
               const {
                 addons,
                 variants,

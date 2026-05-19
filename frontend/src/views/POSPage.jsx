@@ -54,6 +54,7 @@ import { createStripeCheckoutSession } from "../controllers/payment.controller";
 import { createOrderForStripePayment } from "../controllers/pos.controller";
 import StripeReaderConnect from "../components/StripeReaderConnect";
 import axios from "axios";
+import { itemMatchesCategory, itemMatchesSearch, normalizeList } from "../helpers/menuItems";
 
 export default function POSPage() {
   const user = getUserDetailsInLocalStorage();
@@ -282,6 +283,9 @@ export default function POSPage() {
     customerType,
     isLoading,
   } = state;
+  const visibleMenuItems = normalizeList(menuItems)
+    .filter((menuItem) => itemMatchesCategory(menuItem, selectedCategory))
+    .filter((menuItem) => itemMatchesSearch(menuItem, searchQuery));
 
   const [diningOption, setDiningOption] = useState("");
   const handleDiningOptionChange = (e) => {
@@ -318,8 +322,8 @@ export default function POSPage() {
 
         setState({
           ...state,
-          categories: data.categories,
-          menuItems: data.menuItems,
+          categories: normalizeList(data.categories),
+          menuItems: normalizeList(data.menuItems),
           paymentTypes: data.paymentTypes,
           printSettings: data.printSettings,
           storeSettings: data.storeSettings,
@@ -1264,23 +1268,12 @@ export default function POSPage() {
 
           {/* list */}
           <div className="grid grid-cols-2 gap-4 w-full z-0 px-4 pb-4 rounded-b-2xl">
-            {menuItems
-              .filter((menuItem) => {
-                if (selectedCategory == "all") {
-                  return true;
-                }
-                return selectedCategory == menuItem.category_id;
-              })
-              .filter((menuItem) => {
-                if (!searchQuery) {
-                  return true;
-                }
-                return new String(menuItem.title)
-                  .trim()
-                  .toLowerCase()
-                  .includes(searchQuery.trim().toLowerCase());
-              })
-              .map((menuItem, i) => {
+            {visibleMenuItems.length === 0 && (
+              <div className="col-span-2 text-center text-sm text-gray-400 py-12">
+                No menu items available.
+              </div>
+            )}
+            {visibleMenuItems.map((menuItem, i) => {
                 const {
                   title,
                   id,

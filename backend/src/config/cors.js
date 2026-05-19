@@ -1,5 +1,6 @@
 const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:5173",
+  "http://localhost:3001",
   "http://localhost:3000",
   "https://dp360-mvp.netlify.app",
 ];

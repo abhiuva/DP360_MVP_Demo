@@ -1,10 +1,11 @@
 import { createContext, useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE, API_ROOT } from "../config/api";
 
 export const StoreContext = createContext(null);
 
 const StoreContextProvider = (props) => {
-  const url = import.meta.env.VITE_BACKEND_STORE;
+  const url = API_ROOT;
   const currency = import.meta.env.VITE_CURRENCY || "£";
   const deliveryCharge = parseFloat(
     import.meta.env.VITE_DELIVERY_CHARGE || "5"
@@ -47,7 +48,7 @@ const StoreContextProvider = (props) => {
   useEffect(() => {
     const fetchFoodList = async () => {
       try {
-        const response = await axios.get(`${url}/api/food/list`);
+        const response = await axios.get(`${API_BASE}/food/list`);
         if (response.data.success) {
           setFoodList(response.data.data);
         } else {
