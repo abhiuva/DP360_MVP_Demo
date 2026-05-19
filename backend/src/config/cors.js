@@ -3,6 +3,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:3001",
   "http://localhost:3000",
   "https://dp360-mvp.netlify.app",
+  "https://dp360-client.netlify.app",
 ];
 
 const splitCSV = (value = "") =>
