@@ -3,6 +3,10 @@ import { getUserDetailsInLocalStorage } from "./UserDetails";
 
 const SuperAdminProtectedRoute = ({ children }) => {
   const user = getUserDetailsInLocalStorage();
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   const role = user.role;
   
   if(role == "superadmin") {

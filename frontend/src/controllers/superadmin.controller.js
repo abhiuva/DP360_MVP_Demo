@@ -21,12 +21,13 @@ export async function signIn(username, password) {
 export async function signOut() {
   axios.defaults.withCredentials = true;
   try {
-    const response = await ApiClient.post(`${API}/superadmin/signout`);
+    const response = await ApiClient.post(`/superadmin/signout`);
 
     clearUserDetailsInLocalStorage();
 
     return response;
   } catch (error) {
+    clearUserDetailsInLocalStorage();
     throw error;
   }
 }

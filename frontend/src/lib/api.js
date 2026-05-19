@@ -7,6 +7,7 @@ function getToken() {
   // Try common keys you might be using in other pages
   const keys = [
     "token",
+    "salespulsesaas_access_token",
     "access_token",
     "authToken",
     "salespulsesaas_token",

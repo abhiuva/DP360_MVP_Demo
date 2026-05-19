@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API } from "../config/config";
 import Cookie from "js-cookie";
-import { getUserDetailsInLocalStorage } from "./UserDetails";
+import { getAccessTokenInLocalStorage, getUserDetailsInLocalStorage } from "./UserDetails";
 
 const apiClient = axios.create({
   baseURL: API,
@@ -10,6 +10,10 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     config.withCredentials = true;
+    const token = getAccessTokenInLocalStorage();
+    if (token && !config.headers.Authorization) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)

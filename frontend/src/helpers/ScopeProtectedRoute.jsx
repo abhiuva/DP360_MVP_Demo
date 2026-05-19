@@ -3,6 +3,10 @@ import { getUserDetailsInLocalStorage } from "./UserDetails";
 
 const ScopeProtectedRoute = ({ children, scopes }) => {
   const user = getUserDetailsInLocalStorage();
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   const role = user.role;
   
   if(role == "admin") {

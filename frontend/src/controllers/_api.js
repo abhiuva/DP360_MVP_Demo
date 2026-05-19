@@ -13,6 +13,7 @@ api.interceptors.request.use((config) => {
     // If you also use JWT token:
     const token =
       localStorage.getItem("token") ||
+      localStorage.getItem("salespulsesaas_access_token") ||
       localStorage.getItem("authToken") ||
       sessionStorage.getItem("token");
     if (token && !config.headers.Authorization) {

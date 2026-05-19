@@ -2,16 +2,17 @@ import React, { useEffect } from "react";
 import Logo from "../assets/logo.png";
 import { toast } from "react-hot-toast";
 import { signIn } from "../controllers/auth.controller";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isSalesUserAuthenticated } from "../helpers/AuthStatus";
 import {
   getUserDetailsInLocalStorage,
-  saveUserDetailsInLocalStorage,
+  saveAuthSessionInLocalStorage,
 } from "../helpers/UserDetails";
 import { SCOPES } from "../config/scopes";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const salesAuthenticated = isSalesUserAuthenticated();
@@ -71,9 +72,25 @@ export default function LoginPage() {
         toast.success(res.data.message);
 
         const user = res.data.user;
-        saveUserDetailsInLocalStorage(user);
+        const accessToken = res.data.accessToken || res.data.token || res.data.jwt;
+        saveAuthSessionInLocalStorage({
+          user,
+          accessToken,
+        });
+
+        console.debug("[auth] login session saved", {
+          hasUser: Boolean(user),
+          hasToken: Boolean(accessToken),
+          role: user?.role,
+        });
 
         const { role, scope } = getUserDetailsInLocalStorage();
+        const from = location.state?.from?.pathname;
+        if (from && from !== "/login") {
+          navigate(from, { replace: true });
+          return;
+        }
+
         if (role == "admin") {
           navigate("/dashboard/", {
             replace: true,

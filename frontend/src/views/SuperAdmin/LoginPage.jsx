@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { isSalesUserAuthenticated } from "../../helpers/AuthStatus";
 import {
   getUserDetailsInLocalStorage,
-  saveUserDetailsInLocalStorage,
+  saveAuthSessionInLocalStorage,
 } from "../../helpers/UserDetails";
 import { signIn } from "../../controllers/superadmin.controller";
 
@@ -53,7 +53,11 @@ export default function SuperAdminLoginPage() {
         toast.success(res.data.message);
 
         const user = res.data.user;
-        saveUserDetailsInLocalStorage(user);
+        const accessToken = res.data.accessToken || res.data.token || res.data.jwt;
+        saveAuthSessionInLocalStorage({
+          user,
+          accessToken,
+        });
 
         const { role } = getUserDetailsInLocalStorage();
         navigate("/superadmin/dashboard/home", {

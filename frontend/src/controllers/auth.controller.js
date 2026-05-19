@@ -33,12 +33,13 @@ export async function signUp(biz_name, username, password) {
 export async function signOut() {
     axios.defaults.withCredentials = true;
     try {
-        const response = await ApiClient.post(`${API}/auth/signout`);
+        const response = await ApiClient.post(`/auth/signout`);
 
         clearUserDetailsInLocalStorage();
 
         return response;
     } catch (error) {
+        clearUserDetailsInLocalStorage();
         throw error;
     }
 }
