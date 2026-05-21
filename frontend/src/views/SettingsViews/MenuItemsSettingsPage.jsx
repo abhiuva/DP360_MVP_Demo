@@ -37,14 +37,14 @@ export default function MenuItemsSettingsPage() {
     isLoading: isLoadingCategories,
   } = useCategories();
 
-  const { searchQuery, selectedCategory, selectedItemId } = state;
-  const visibleMenuItems = normalizeList(menuItems)
-    .filter((menuItem) => itemMatchesCategory(menuItem, selectedCategory))
-    .filter((menuItem) => itemMatchesSearch(menuItem, searchQuery));
   const { APIURL: APIURLInventory, data: inventoryItems, error: errorInventory, isLoading: isLoadingInventory } = useInventoryItems();
   const { APIURL: APIURLTaxes, data: taxes, error: errorTaxes, isLoading: isLoadingTaxes } = useTaxes();
 
   const { APIURL, data: menuItems, error, isLoading } = useMenuItems();
+  const { searchQuery, selectedCategory, selectedItemId } = state;
+  const visibleMenuItems = normalizeList(menuItems)
+    .filter((menuItem) => itemMatchesCategory(menuItem, selectedCategory))
+    .filter((menuItem) => itemMatchesSearch(menuItem, searchQuery));
 
   if (isLoadingCategories) {
     return <Page>Please wait...</Page>;
