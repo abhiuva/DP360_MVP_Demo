@@ -3,19 +3,42 @@ const { addMenuItemDB, updateMenuItemDB, deleteMenuItemDB, addMenuItemAddonDB, u
 const path = require("path")
 const fs = require("fs");
 
+const optionalNumber = (value, fallback = null) => {
+    if (value === undefined || value === null || value === "") return fallback;
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : fallback;
+};
+
+const requiredPositiveNumber = (value) => {
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : null;
+};
+
 exports.addMenuItem = async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const {title, price, netPrice, taxId, discount, categoryId,status, inventoryId} = req.body;
+        const parsedPrice = requiredPositiveNumber(price);
+        const parsedInventoryId = requiredPositiveNumber(inventoryId);
 
-        if (!(title && price && inventoryId)) {
+        if (!(title && parsedPrice && parsedInventoryId)) {
             return res.status(400).json({
                 success: false,
                 message: "Please provide required details: title, price, inventoryId"
             });
         }
 
-        const menuItemId = await addMenuItemDB(title, price, netPrice, taxId, discount, categoryId, tenantId,status, inventoryId);
+        const menuItemId = await addMenuItemDB(
+            title,
+            parsedPrice,
+            optionalNumber(netPrice),
+            optionalNumber(taxId),
+            optionalNumber(discount, 0),
+            optionalNumber(categoryId),
+            tenantId,
+            status || "Available",
+            parsedInventoryId
+        );
 
         return res.status(200).json({
             success: true,
@@ -23,7 +46,15 @@ exports.addMenuItem = async (req, res) => {
             menuItemId
         })
     } catch (error) {
-        console.error(error);
+        console.error("[menu-items/add] Failed to add menu item", {
+            tenantId: req.user?.tenant_id,
+            body: req.body,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage,
+            message: error.message,
+        });
         return res.status(500).json({
             success: false,
             message: "Something went wrong! Please try later!"
@@ -36,22 +67,44 @@ exports.updateMenuItem = async (req, res) => {
         const tenantId = req.user.tenant_id;
         const id = req.params.id;
         const { title, price, netPrice, taxId, discount, status, categoryId, inventoryId } = req.body;
+        const parsedPrice = requiredPositiveNumber(price);
+        const parsedInventoryId = requiredPositiveNumber(inventoryId);
 
-        if (!(title && price && inventoryId)) {
+        if (!(title && parsedPrice && parsedInventoryId)) {
             return res.status(400).json({
                 success: false,
                 message: "Please provide required details: title, price, inventoryId"
             });
         }
 
-        await updateMenuItemDB(id, title, price, netPrice, taxId, discount, status, categoryId, tenantId, inventoryId);
+        await updateMenuItemDB(
+            id,
+            title,
+            parsedPrice,
+            optionalNumber(netPrice),
+            optionalNumber(taxId),
+            optionalNumber(discount, 0),
+            status || "Available",
+            optionalNumber(categoryId),
+            tenantId,
+            parsedInventoryId
+        );
 
         return res.status(200).json({
             success: true,
             message: "Menu Item Updated."
         })
     } catch (error) {
-        console.error(error);
+        console.error("[menu-items/update] Failed to update menu item", {
+            tenantId: req.user?.tenant_id,
+            menuItemId: req.params?.id,
+            body: req.body,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage,
+            message: error.message,
+        });
         return res.status(500).json({
             success: false,
             message: "Something went wrong! Please try later!"

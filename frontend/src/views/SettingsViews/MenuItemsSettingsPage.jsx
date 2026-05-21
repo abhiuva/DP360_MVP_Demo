@@ -105,7 +105,7 @@ export default function MenuItemsSettingsPage() {
     const inventoryId = inventoryIdRef.current.value || null;
     const taxId = taxIdRef.current.value || null;
     const status = statusRef.current.value || "Available";
-    const discount = discountRef.current.value;	   
+    const discount = discountRef.current.value || 0;	   
 
     if (!title) {
       toast.error("Please enter title!");

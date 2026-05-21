@@ -127,7 +127,7 @@ export default function MenuItemViewPage() {
     const categoryId = categoryIdRef.current.value || null;
     const inventoryId = inventoryIdRef.current.value || null;
     const taxId = taxIdRef.current.value || null;
-    const discount = discountRef.current.value || null;
+    const discount = discountRef.current.value || 0;
     const status = statusRef.current.value || "Available";
 
     if (!title) {

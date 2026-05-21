@@ -44,8 +44,22 @@ const corsOptions = {
 };
 
 const socketCorsOptions = {
-  origin: allowedOrigins,
-  methods: ["GET", "POST"],
+  origin(origin, callback) {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`Origin ${origin} is not allowed by Socket.IO CORS`));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "tenant-id",
+    "x-tenant-id",
+    "X-Tenant-Id",
+    "X-Requested-With",
+  ],
   credentials: true,
 };
 
